@@ -1,9 +1,2 @@
-const { resolveDependencies, downloadPackages } = require('./lib/fetch-packages');
-const { publishFolder, publishTarball } = require('./lib/npm-publish');
-
-module.exports = {
-    resolveDependencies,
-    downloadPackages,
-    publishFolder,
-    publishTarball,
-};
+export { resolveDependencies, downloadPackages } from './lib/fetch-packages';
+export { publishFolder, publishTarball } from './lib/npm-publish';
