@@ -52,6 +52,6 @@
     "eslint-plugin-import": "^2.18.2"
   },
   "engines": {
-    "node": ">=7.8.0"
+    "node": ">=16.0.0"
   }
 }
