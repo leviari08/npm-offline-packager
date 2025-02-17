@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 
-const commander = require('commander');
-const shell = require('shelljs');
-const moment = require('moment');
-const rimraf = require('rimraf');
-const Gauge = require('gauge');
-const { promisify } = require('util');
-const { dirname, join } = require('path');
-const { create, extract } = require('tar');
-const { execSync } = require('child_process');
-const { green, red, yellow } = require('chalk').default;
-const { existsSync, readFileSync, lstatSync, mkdirSync, readdirSync } = require('fs');
-const { resolvedPackages } = require('./lib/cache');
-const { resolveDependencies, downloadPackages } = require('./lib/fetch-packages');
-const { publishFolder, publishTarball } = require('./lib/npm-publish');
-const { getNpmTopPackages } = require('./lib/npm-top');
-const currPackageJson = require('./package');
+import commander from 'commander';
+import shelljs from 'shelljs';
+import moment from 'moment';
+import rimraf from 'rimraf';
+import Gauge from 'gauge';
+import { promisify } from 'util';
+import { dirname, join } from 'path';
+import { create, extract } from 'tar';
+import { execSync } from 'child_process';
+import chalk from 'chalk';
+import { existsSync, readFileSync, lstatSync, mkdirSync, readdirSync } from 'fs';
+import { resolvedPackages } from './lib/cache.mjs';
+const { resolveDependencies, downloadPackages } = await import('./lib/fetch-packages.js');
+const { publishFolder, publishTarball } = await import('./lib/npm-publish.js');
+import { getNpmTopPackages } from './lib/npm-top.mjs';
+const currentPackageJson = await import('./package.json', { with: { type: "json" } });
 
 const rimrafPromise = promisify(rimraf);
 
@@ -23,15 +23,13 @@ const rimrafPromise = promisify(rimraf);
 /**
 * Version and description
 */
-commander
-    .version(currPackageJson.version, '-v, --version')
+commander.version(currentPackageJson, '-v, --version')
     .description('Fetch and publish npm packages for private npm registry');
 
 /**
 * Fetch command
 */
-commander
-    .command('fetch [packages...]')
+commander.command('fetch [packages...]')
     .description('Fetch packages tarball from npm registry')
     .alias('f')
     .option('-p, --package-json <packageJson>', 'The path to package.json file')
@@ -45,6 +43,7 @@ commander
     .option('-r, --registry <registry>', 'The registry url', 'https://registry.npmjs.org/')
     .action(async (packages, command) => {
         try {
+            command.cache = false;
             const startTime = moment();
             const destFolder = command.dest ? command.dest : `packages_${startTime.format('MMDDYYYY.HHmmss')}`;
             let currStage = 1;
@@ -101,21 +100,21 @@ commander
                 };
 
                 gauge.hide();
-                shell.echo(green(`[${currStage}/${stages}] Fetch top ${topPackages.length} npm packages completed`));
+                shelljs.echo(chalk.green(`[${currStage}/${stages}] Fetch top ${topPackages.length} npm packages completed`));
 
                 currStage++;
             }
 
             if (!packagesObj || !packagesObj.dependencies) {
-                return shell.echo(yellow(`Required arguments is missing.
+                return shelljs.echo(chalk.yellow(`Required arguments is missing.
     Please run:
-        ${green('// For packages list')}
+        ${chalk.green('// For packages list')}
         npo fetch package1 package2
 
-        ${green('// For package.json file')}
+        ${chalk.green('// For package.json file')}
         npm fetch -p ./package.json
 
-        ${green('// To fetch top npm packages')}
+        ${chalk.green('// To fetch top npm packages')}
         npm fetch --top 1000`));
             }
 
@@ -138,7 +137,7 @@ commander
             });
 
             gauge.hide();
-            shell.echo(green(`[${currStage}/${stages}] Resolving dependencies completed with ${dependencies.length} packages`));
+            shelljs.echo(chalk.green(`[${currStage}/${stages}] Resolving dependencies completed with ${dependencies.length} packages`));
             currStage++;
 
             logger('Fetching packages...');
@@ -154,7 +153,7 @@ commander
             const displayAmount = completedPackages.length === result.length ? result.length : `${completedPackages.length}/${result.length}`;
 
             gauge.disable();
-            shell.echo(green(`[${currStage}/${stages}] Fetching packages completed with ${displayAmount} packages ${inCachePackages ? `(${inCachePackages} packages already in cache)` : ''}`));
+            shelljs.echo(chalk.green(`[${currStage}/${stages}] Fetching packages completed with ${displayAmount} packages ${inCachePackages ? `(${inCachePackages} packages already in cache)` : ''}`));
 
 
             if (!result.length) {
@@ -164,7 +163,7 @@ commander
                     await rimrafPromise(destFolder);
                 }
 
-                return shell.echo(yellow('No packages found to fetch. Add --no-cache flag to disable cache'));
+                return shelljs.echo(chalk.yellow('No packages found to fetch. Add --no-cache flag to disable cache'));
             }
 
             if (command.tar) {
@@ -183,18 +182,17 @@ commander
             const minutes = duration.minutes();
             const seconds = duration.seconds();
             const milliseconds = duration.milliseconds();
-            shell.echo(green(`      Duration: ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}:${milliseconds}`));
-            shell.echo(green(`      Destination folder: ${command.tar ? `${destFolder}.tar` : destFolder} `));
+            shelljs.echo(chalk.green(`      Duration: ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}:${milliseconds}`));
+            shelljs.echo(chalk.green(`      Destination folder: ${command.tar ? `${destFolder}.tar` : destFolder} `));
         } catch (error) {
-            console.log(error && error.message ? red(error.message) : error);
+            console.log(error && error.message ? chalk.red(error.message) : error);
         }
     });
 
 /**
  * Publish command
  */
-commander
-    .command('publish <path>')
+commander.command('publish <path>')
     .alias('p')
     .option('-r, --registry <registry>', 'The private registry url')
     .option('-s, --skip-login', 'Whether to skip npm login command', false)
@@ -209,12 +207,12 @@ commander
             }
 
             if (!command.skipLogin) {
-                shell.echo('npm login');
+                shelljs.echo('npm login');
                 execSync('npm login', { stdio: 'inherit' });
             }
 
             if (command.registry) {
-                shell.exec(`npm set registry ${command.registry}`);
+                shelljs.exec(`npm set registry ${command.registry}`);
             }
 
             // Chack if path is a file or folder
@@ -223,13 +221,13 @@ commander
                 if (path.endsWith('.tar')) {
                     const folderPath = path.replace('.tar', '');
                     await extract({ file: path, cwd: dirname(path) });
-                    shell.cd(folderPath);
+                    shelljs.cd(folderPath);
                     await publishFolder('.', { force: command.force, concurrent: command.concurrent, delPackage: command.delPackage });
 
                     if (command.delPackage) {
                         const files = readdirSync(folderPath);
                         if (!files.length) {
-                            shell.cd(`${folderPath}\\..`);
+                            shelljs.cd(`${folderPath}\\..`);
                             await rimrafPromise(folderPath);
                         }
                     }
@@ -237,11 +235,11 @@ commander
                     await publishTarball(path, { force: command.force, delPackage: command.delPackage });
                 }
             } else {
-                shell.cd(path);
+                shelljs.cd(path);
                 await publishFolder('.', { force: command.force, concurrent: command.concurrent, delPackage: command.delPackage });
             }
         } catch (error) {
-            console.log(error && error.message ? red(error.message) : error);
+            console.log(error && error.message ? chalk.red(error.message) : error);
         }
     });
 

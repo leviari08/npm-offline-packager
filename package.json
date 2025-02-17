@@ -2,9 +2,9 @@
   "name": "npm-offline-packager",
   "version": "1.3.0",
   "description": "Fetch and publish npm packages for private npm registry",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
-    "start": "node cli.js",
+    "start": "node cli.mjs",
     "lint": "eslint ."
   },
   "repository": {
