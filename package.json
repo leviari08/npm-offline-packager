@@ -31,12 +31,12 @@
     "pacote": "^9.5.8",
     "rimraf": "^3.0.0",
     "semver": "^6.3.0",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.5",
     "tar": "^5.0.5"
   },
   "devDependencies": {
     "@types/node": "^12.11.7",
-    "@types/shelljs": "^0.8.5",
+    "@types/shelljs": "0.8.15",
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2"
