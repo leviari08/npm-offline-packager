@@ -21,7 +21,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.7.9",
     "chalk": "^2.4.2",
     "commander": "^3.0.2",
     "gauge": "^2.7.4",
