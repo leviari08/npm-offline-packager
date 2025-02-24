@@ -149,7 +149,7 @@ commander
                 registry: command.registry,
             });
 
-            const completedPackages = result.filter(inspection => inspection.isFulfilled());
+            const completedPackages = result.filter(Boolean);
             const inCachePackages = dependencies.length - result.length;
             const displayAmount = completedPackages.length === result.length ? result.length : `${completedPackages.length}/${result.length}`;
 
@@ -186,7 +186,7 @@ commander
             shell.echo(green(`      Duration: ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}:${milliseconds}`));
             shell.echo(green(`      Destination folder: ${command.tar ? `${destFolder}.tar` : destFolder} `));
         } catch (error) {
-            console.log(error && error.message ? red(error.message) : error);
+            console.error(error && error.message ? red(error.message) : error);
         }
     });
 
