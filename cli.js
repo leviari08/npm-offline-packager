@@ -4,9 +4,8 @@ const commander = require('commander');
 const shell = require('shelljs');
 const dayjs = require('dayjs');
 dayjs.extend(require('dayjs/plugin/duration'));
-const rimraf = require('rimraf');
+const { rimraf } = require('rimraf');
 const Gauge = require('gauge');
-const { promisify } = require('util');
 const { dirname, join } = require('path');
 const { create, extract } = require('tar');
 const { execSync } = require('child_process');
@@ -17,9 +16,6 @@ const { resolveDependencies, downloadPackages } = require('./lib/fetch-packages'
 const { publishFolder, publishTarball } = require('./lib/npm-publish');
 const { getNpmTopPackages } = require('./lib/npm-top');
 const currPackageJson = require('./package');
-
-const rimrafPromise = promisify(rimraf);
-
 
 /**
 * Version and description
@@ -162,7 +158,7 @@ commander
                 // Remove dest folder if is empty
                 const files = readdirSync(destFolder);
                 if (!files.length) {
-                    await rimrafPromise(destFolder);
+                    await rimraf(destFolder);
                 }
 
                 return shell.echo(yellow('No packages found to fetch. Add --no-cache flag to disable cache'));
@@ -173,7 +169,7 @@ commander
                 await create({ file: `${destFolder}.tar` }, [destFolder]);
 
                 if (!command.dest) {
-                    await rimrafPromise(destFolder);
+                    await rimraf(destFolder);
                 }
             }
 
@@ -227,7 +223,7 @@ commander
                         const files = readdirSync(folderPath);
                         if (!files.length) {
                             shell.cd(`${folderPath}\\..`);
-                            await rimrafPromise(folderPath);
+                            await rimraf(folderPath);
                         }
                     }
                 } else {
