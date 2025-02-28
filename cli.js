@@ -2,13 +2,14 @@
 
 const commander = require('commander');
 const shell = require('shelljs');
-const moment = require('moment');
+const dayjs = require('dayjs');
+dayjs.extend(require('dayjs/plugin/duration'));
 const { rimraf } = require('rimraf');
 const Gauge = require('gauge');
 const { dirname, join } = require('path');
 const { create, extract } = require('tar');
 const { execSync } = require('child_process');
-const { green, red, yellow } = require('chalk').default;
+const { green, red, yellow } = require('chalk');
 const { existsSync, readFileSync, lstatSync, mkdirSync, readdirSync } = require('fs');
 const { resolvedPackages } = require('./lib/cache');
 const { resolveDependencies, downloadPackages } = require('./lib/fetch-packages');
@@ -41,7 +42,7 @@ commander
     .option('-r, --registry <registry>', 'The registry url', 'https://registry.npmjs.org/')
     .action(async (packages, command) => {
         try {
-            const startTime = moment();
+            const startTime = dayjs();
             const destFolder = command.dest ? command.dest : `packages_${startTime.format('MMDDYYYY.HHmmss')}`;
             let currStage = 1;
             const stages = command.top && !command.packageJson && !packages.length ? 3 : 2;
@@ -172,14 +173,10 @@ commander
                 }
             }
 
-            const endTime = moment();
-            const duration = moment.duration(endTime.diff(startTime));
+            const endTime = dayjs();
+            const duration = dayjs.duration(endTime.diff(startTime));
 
-            const hours = duration.hours();
-            const minutes = duration.minutes();
-            const seconds = duration.seconds();
-            const milliseconds = duration.milliseconds();
-            shell.echo(green(`      Duration: ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}:${milliseconds}`));
+            shell.echo(green(`      Duration: ${duration.format('HH:mm:ss:SSS')}`));
             shell.echo(green(`      Destination folder: ${command.tar ? `${destFolder}.tar` : destFolder} `));
         } catch (error) {
             console.error(error && error.message ? red(error.message) : error);
