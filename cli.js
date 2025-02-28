@@ -52,7 +52,6 @@ commander
             const stages = command.top && !command.packageJson && !packages.length ? 3 : 2;
             let packagesObj;
 
-
             // Logger function for progress bar
             const gauge = new Gauge();
             const logger = (message, percent = 0) => {
@@ -157,7 +156,6 @@ commander
             gauge.disable();
             shell.echo(green(`[${currStage}/${stages}] Fetching packages completed with ${displayAmount} packages ${inCachePackages ? `(${inCachePackages} packages already in cache)` : ''}`));
 
-
             if (!result.length) {
                 // Remove dest folder if is empty
                 const files = readdirSync(destFolder);
@@ -170,7 +168,7 @@ commander
 
             if (command.tar) {
                 // Create new tarball
-                await create({ file: `${destFolder}.tar` }, [destFolder]);
+                create({ file: `${destFolder}.tar`, sync: true }, [destFolder]);
 
                 if (!command.dest) {
                     await rimrafPromise(destFolder);
@@ -219,7 +217,7 @@ commander
                 // In case of tar file extract the packages
                 if (path.endsWith('.tar')) {
                     const folderPath = path.replace('.tar', '');
-                    await extract({ file: path, cwd: dirname(path) });
+                    extract({ file: path, cwd: dirname(path), sync: true });
                     shell.cd(folderPath);
                     await publishFolder('.', { force: command.force, concurrent: command.concurrent, delPackage: command.delPackage });
 
